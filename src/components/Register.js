@@ -92,7 +92,7 @@ class Register extends Component {
     }
        console.log("city"+this.state.city)
 
-      if(this.state.city.trim()!="" && this.state.statee.trim()!="" && this.state.usertype.trim()!="" && this.state.name.trim()!="" && this.state.email.trim()!="" ){
+      if(this.state.city.trim()!="" && this.state.statee.trim()!="" && this.state.usertype.trim()!="" && this.state.name.trim()!="" && this.state.email.trim()!="" &&!this.validateEmail(this.state.email)){
     
         this.openProgressbar()
         AsyncStorage.setItem('mobile', this.state.mobile);
