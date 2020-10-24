@@ -5,10 +5,12 @@ import ImagePicker from 'react-native-image-picker';
 import AnimatedEllipsis from 'react-native-animated-ellipsis';
 
 class RegisterContinue extends Component {
+  
   constructor() {
     super();
-    this.state = {
-      type:'',
+    this.handleMore = this.handleMore.bind(this);
+    this.state = {     
+     type:'',
       whatsapperror: '',
       companyerror: '',
       grtineeror: '',
@@ -38,7 +40,6 @@ class RegisterContinue extends Component {
       address: '',
       aaadharUri: '',
       panUri: ''
-
     }
   }
   
@@ -46,15 +47,17 @@ class RegisterContinue extends Component {
     var re = /^([0][1-9]|[1-2][0-9]|[3][0-7])([a-zA-Z]{5}[0-9]{4}[a-zA-Z]{1}[1-9a-zA-Z]{1}[zZ]{1}[0-9a-zA-Z]{1})+$/;
     return re.test(gst)
   }
-  register() {
-   
-    AsyncStorage.getItem('type').then(value => {
-      Alert.alert("type"+value)
+
+  async register() {
+  //  Alert.alert(this.state.statee)
+    await AsyncStorage.getItem('type').then(value => {
+    
       this.setState({
         type:value
       })
       
     })
+   
     var validator = require('aadhaar-validator')
 
     var regpan = /^([a-zA-Z]){5}([0-9]){4}([a-zA-Z]){1}?$/;
@@ -96,97 +99,98 @@ class RegisterContinue extends Component {
     if (this.state.aleternativemobile.length <10) {
       this.setState({ aleternativemobileerror: 'Minimum length should be 10' })
     }
-    // if(this.state.whatsappmobile===this.state.aleternativemobile){
-    //   this.setState({ whatsapperror: 'Alternative number shouldn\'t be same' })
-    //   this.setState({ aleternativemobileerror: 'Alternative number shouldn\'t be same' })
-    // }
+    if(this.state.whatsappmobile===this.state.aleternativemobile){
+      this.setState({ whatsapperror: 'Alternative number shouldn\'t be same' })
+      this.setState({ aleternativemobileerror: 'Alternative number shouldn\'t be same' })
+    }
     if (!this.gstvalidation(this.state.gstin)) {
 
       this.setState({ grtineeror: 'Invalid gst!' })
 
     }
-    
-    
+        
     if(this.state.type === 'Customer'){
-      this.openProgressbar()
-      if(this.state.address.trim()!=''||this.state.whatsappmobile.trim()!=''||this.state.aleternativemobile.trim()!=''||this.state.panData.trim()!=''||this.state.aadharData.trim()!=''){
-  // fetch('https://capi.saniologistics.com/api/Transporter/Add', {
-          //    method: 'POST',
-          //    headers: {
+    //  Alert.alert('Customer')
+     this.openProgressbar()
+      if(this.state.address.trim()!='' && this.state.whatsappmobile.trim()!='' && this.state.aleternativemobile.trim()!='' && this.state.panData.trim()!='' && this.state.aadharData.trim()!='' && this.state.whatsappmobile!=this.state.aleternativemobile && regpan.test(this.state.panData) && validator.isValidNumber(this.state.aadharData)){
+      fetch('https://capi.saniologistics.com/api/Registration/Customer', {
+             method: 'POST',
+             headers: {
+              'Content-Type': 'application/json',
+            },
+              body: JSON.stringify({
+                              
+                  "name": this.state.name,
+                  "gender": "gender",
+                  "nationality": "indian",
+                  "mobile": this.state.mobile,
+                  "email": this.state.email,
+                  "role_Id": 0,
+                  "referance_Type": 1,
+                  "password": "password",
+                  "confirm_Password": "password",
+                  "description": "Customer",
+                  "status": 0,
+                  "user_Id": "",
+                  "device_Id": "",
+                  "login_Token": "",
+                  "requested_By": this.state.name,
+                  "requested_On": "2020-10-16T11:48:13.501Z",
+                  "time_Zone_Id": "",
+                  "time_Zone_Region": "",
+                  "offset_Seconds": 0,
+                  "longitude": "12.24356",
+                  "latitude": "12.23456",
+                  "address": this.state.address
+                
+              })
 
-          //     'Content-Type': 'application/json',
+          })
 
-          //   },
-
-          //     body: JSON.stringify({
-
-          //         "owner_Type": 0,
-          //         "name": this.state.name,
-          //         "mobile": this.state.mobile,
-          //         "email": this.state.email,
-          //         "other_Mobile": this.state.mobile,
-          //         "other_Email": this.state.email,
-          //         "whatsapp_Mobile": this.state.whatsappmobile,
-          //         "company_Name": this.state.companyname,
-          //         "gstin": this.state.gstin,
-          //         "paN_No": this.state.panData,
-          //         "aadhar_No": this.state.aadharData,
-          //         "image_Url": "string",
-          //         "description": "transporter",
-          //         "status": 0,
-          //         "user_Id": "null",
-          //         "device_Id": "null",
-          //         "login_Token": "null",
-          //         "role_Id": 0,
-          //         "requested_By": this.state.name,
-          //         "requested_On": "2020-10-12T02:28:24.668Z",
-          //         "time_Zone_Id": "ist",
-          //         "time_Zone_Region": "ist",
-          //         "offset_Seconds": 0,
-          //         "longitude": "",
-          //         "latitude": "",
-          //         "address": this.state.address
-
-          //     })
-
-          // })
-
-          //     .then((response) => response.json())
-          //     .then((responseJSON) => {
-          //       // Alert.alert("error"+JSON.stringify(responseJSON.Message))
-          //         if (responseJSON.Message == "Owner created successfully") {
-          //             this.setState({isLoading:false});
-
-          //             Alert.alert("status"+responseJSON.Status)     
-          //            this.props.navigation.navigate('driverdashboard')
-          //            this.closeProgressbar()
-          //         } else {
-          //             this.setState({isLoading:false});
-          //          //   Alert.alert("error"+JSON.stringify(responseJSON.Status))
-          //         }
-          //     }).catch((error) => {
-          //         console.error(error);
-          //     });
-         this.props.navigation.navigate('driverdashboard')
+              .then((response) => response.json())
+              .then((responseJSON) => {
+                console.log(JSON.stringify(responseJSON))
+             //  Alert.alert("status"+JSON.stringify(responseJSON))
+                  if (responseJSON.Message === "Customer created successfully") {
+                      this.setState({isLoading:false});   
+                     this.props.navigation.navigate('driverdashboard')
+                     this.closeProgressbar()
+                  } else {
+                      this.setState({isLoading:false});
+                      Alert.alert("User Already exist")
+                  }
+              }).catch((error) => {
+                  console.error(error);
+              });
+        //Alert.alert('Alert')
       }
     }else if (this.state.type === 'Truck Owner') {
-      if(this.state.address.trim()!=''||this.state.whatsappmobile.trim()!=''||this.state.aleternativemobile.trim()!=''||this.state.panData.trim()!=''||this.state.aadharData.trim()!=''){
+      // console.log("state"+this.state.statee)
+      // console.log("state"+this.state.city)
+      // console.log("state"+this.state.name)
+      // console.log("state"+this.state.type)
+      console.log("state"+this.state.address)
+      console.log("state"+this.state.whatsappmobile)
+      console.log("state"+this.state.aleternativemobile)
+      console.log("state"+this.state.aadharData)
+      console.log("state"+this.state.panData)
+      console.log("state"+this.state.gstin)
+      console.log("state"+this.state.aadharData)
 
-      this.openProgressbar()
-      fetch('https://capi.saniologistics.com/api/TruckOwner/Add', {
-        method: 'POST',
+    if(this.state.address.trim()!='' && this.state.whatsappmobile.trim()!=''&&this.state.aleternativemobile.trim()!='' && this.state.panData.trim()!='' && this.state.aadharData.trim()!='' && this.state.whatsappmobile!=this.state.aleternativemobile && regpan.test(this.state.panData) && validator.isValidNumber(this.state.aadharData)&&validator.isValidNumber(this.state.aadharData)&&this.state.whatsappmobile.length===10&&this.state.whatsappmobile.length===10){
+        this.openProgressbar()
+        fetch('https://capi.saniologistics.com/api/Registration/TruckOwner',{
+          method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-
         body: JSON.stringify({
-
           "owner_Type": 0,
           "name": this.state.name,
           "mobile": this.state.mobile,
           "email": this.state.email,
           "other_Mobile": this.state.mobile,
-          "other_Email": this.state.email,
+          "other_Email": "",
           "whatsapp_Mobile": this.state.whatsappmobile,
           "company_Name": this.state.companyname,
           "gstin": this.state.gstin,
@@ -207,13 +211,13 @@ class RegisterContinue extends Component {
           "longitude": "",
           "latitude": "",
           "address": this.state.address
-
         })
       })
 
         .then((response) => response.json())
         .then((responseJSON) => {
-          if (responseJSON.Message == "Owner created successfully") {
+          console.log(JSON.stringify(responseJSON))
+          if (responseJSON.Message === "Owner created successfully") {
             this.setState({ isLoading: false });  
             this.props.navigation.navigate('driverdashboard')
             this.closeProgressbar()
@@ -224,13 +228,15 @@ class RegisterContinue extends Component {
         }).catch((error) => {
           console.error(error);
         });
+      }else{
+        //Alert.alert("Alert")
       }
     }else if(this.state.type==='Transporter'){
-      if(this.state.address.trim()!=''||this.state.whatsappmobile.trim()!=''||this.state.aleternativemobile.trim()!=''||this.state.panData.trim()!=''||this.state.aadharData.trim()!=''){
+      if(this.state.address.trim()!=''&&this.state.whatsappmobile.trim()!=''&&this.state.aleternativemobile.trim()!=''&&this.state.panData.trim()!=''&&this.state.aadharData.trim()!=''){
      
       this.openProgressbar()
      
-      fetch('https://capi.saniologistics.com/api/Transporter/Add', {
+      fetch('https://capi.saniologistics.com/api/Registration/Transporter', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -265,10 +271,10 @@ class RegisterContinue extends Component {
           "address": this.state.address
         })
       })
-
         .then((response) => response.json())
         .then((responseJSON) => {
-          if (responseJSON.Message == "Owner created successfully") {
+          console.log(JSON.stringify(responseJSON))
+          if (responseJSON.Message === "Owner created successfully") {
             this.setState({ isLoading: false });
             this.props.navigation.navigate('driverdashboard')
             this.closeProgressbar()
@@ -306,14 +312,15 @@ class RegisterContinue extends Component {
 
     setTimeout(() => {
       AsyncStorage.getItem('type').then(value => {
+        
         if (value === 'Truck Owner') {
-
           this.setState({ truckownervisible: true })
           this.closeProgressbar();
         } else if (value === 'Transporter') {
           this.setState({ transportervisible: true })
           this.closeProgressbar();
-        }else if(value==='Customer'){
+        }else if(value === 'Customer'){
+        
           this.setState({ customervisible: true })
           this.closeProgressbar();
         }
@@ -356,38 +363,41 @@ class RegisterContinue extends Component {
       else {
         if (value === "address") {
           this.setState({
-
             addressData: response.data,
             addressUri: response.uri
-          });
+          })
         } else if (value === "aadhar") {
 
         }
       }
     });
   }
-  handleMore(value){
+
+  async handleMore(value){
     this.setState({
-      gstin:value
+      gstin:value,
+      grtineeror:''
+    
     })
-    Alert.alert(this.state.gstin.length)
-    // if(this.state.gstin.length>14){
-    //   var res = this.state.gstin.substr(2, 11);
-    //   Alert.alert(res)
-    // }
+    console.log(this.state.gstin.length)
+    if(this.state.gstin.length===14){
+      var res = this.state.gstin.substr(2, 10);
+      await this.setState({panData:res,pannerror:''})
+      
+    }    
+    
   }
+
   render() {
     return (
-      <ScrollView>
-        <View style={{ backgroundColor: 'white', height: '100%' }}>
+      <View style={{backgroundColor: 'white',flex:1}}>
 
           {this.state.isLoading ? (
             <CustomProgressBar />
-          ) : null}
-          <View>
-            <View>
+          ) : null}  
+           <ScrollView>
               {this.state.customervisible ? (
-                <View>
+                <View style={{flex:1}}>
                   <Image source={require('../images/sanio_logo.png')} style={styles.logo} />
 
 
@@ -396,51 +406,56 @@ class RegisterContinue extends Component {
                     <Text style={{ color: 'red' }}>{this.state.addresserror}</Text>
 
                   </View>
-
+                 
                   <View style={{ marginLeft: 20, marginRight: 20, marginTop: 10 }}>
-                    <TextInput styles={styles.textInput} placeholder="whatsapp Mobile" underlineColorAndroid='#d5d5d5' onChangeText={(whatsapp_Mobile) => this.setState({ whatsappmobile: whatsapp_Mobile, whatsapperror: '' })} maxLength={10} />
+                    <TextInput styles={styles.textInput} placeholder="whatsapp Mobile" underlineColorAndroid='#d5d5d5' onChangeText={(whatsapp_Mobile) => this.setState({ whatsappmobile: whatsapp_Mobile, whatsapperror: '' })} maxLength={10}/>
                     <Text style={{ color: 'red' }}>{this.state.whatsapperror}</Text>
 
                   </View>
 
                   <View style={{ marginLeft: 20, marginRight: 20, marginTop: 10 }}>
-                    <TextInput styles={styles.textInput} placeholder="Alternative Mobile" underlineColorAndroid='#d5d5d5' onChangeText={(aleternativemobile) => this.setState({ aleternativemobile: aleternativemobile, aleternativemobileerror: '' })} maxLength={10} />
+                    <TextInput styles={styles.textInput} placeholder="Alternative Mobile" underlineColorAndroid='#d5d5d5' onChangeText={(aleternativemobile) => this.setState({ aleternativemobile: aleternativemobile, aleternativemobileerror: '' })} maxLength={10} keyboardType='numeric' />
                     <Text style={{ color: 'red' }}>{this.state.aleternativemobileerror}</Text>
 
                   </View>
 
                   <View style={{ marginLeft: 20, marginRight: 20, marginTop: 10 }}>
-                    <TextInput styles={styles.textInput} placeholder="Please enter valid PAN number. E.g. AAAAA9999A" underlineColorAndroid='#d5d5d5' onChangeText={(panData) => this.setState({ panData: panData, pannerror: '' })} maxLength={10} pattern="[a-zA-Z]{5}[0-9]{4}[a-zA-Z]{1}" />
+                    <TextInput styles={styles.textInput} autoCapitalize='characters' placeholder="Please enter valid PAN number. E.g. AAAAA9999A" underlineColorAndroid='#d5d5d5' onChangeText={(panData) => this.setState({ panData: panData, pannerror: '' })} maxLength={10}/>
                     <Text style={{ color: 'red' }}>{this.state.pannerror}</Text>
 
                   </View>
 
                   <View style={{ marginLeft: 20, marginRight: 20, marginTop: 10 }}>
-                    <TextInput styles={styles.textInput} placeholder="Aadhar" underlineColorAndroid='#d5d5d5' onChangeText={(name) => this.setState({ aadharData: name, aadharerror: '' })} maxLength={15} />
+                    <TextInput styles={styles.textInput} placeholder="Aadhar" underlineColorAndroid='#d5d5d5' onChangeText={(name) => this.setState({ aadharData: name, aadharerror: '' })} maxLength={15} keyboardType='numeric'/>
                     <Text style={{ color: 'red' }}>{this.state.aadharerror}</Text>
 
                   </View>
 
-                  <View style={{ alignItems: 'center' }}>
+                  <View style={{ alignItems: 'center'}}>
                     <TouchableOpacity style={styles.button} onPress={() => this.register()}>
                       <Text style={{ color: '#FFFFFF' }}>LOGIN</Text>
                     </TouchableOpacity>
                   </View>
-                  <View style={{ alignItems: 'center' }}>
+                  {/* <View style={{ alignItems: 'center',bottom:5,position:"absolute",width:'100%' }}>
                     <Text style={{ color: '#blue' }}>OTP will be send to your mobile number</Text>
-                  </View>
+                  </View> */}
                 </View>
               ) : null}
-            </View>
+            </ScrollView>
 
-            <View>
+            <ScrollView>
               {this.state.truckownervisible ? (
-                <View>
+                <View style={{flex:1}}>
                   <Image source={require('../images/sanio_logo.png')} style={styles.logo} />
 
                   <View style={{ marginLeft: 20, marginRight: 20, marginTop: 10 }}>
                     <TextInput styles={styles.textInput} placeholder="whatsapp Mobile" underlineColorAndroid='#d5d5d5' onChangeText={(name) => this.setState({ whatsappmobile: name, whatsapperror: '' })} keyboardType='numeric' maxLength={10} />
                     <Text style={{ color: 'red' }}>{this.state.whatsapperror}</Text>
+
+                  </View>
+                  <View style={{ marginLeft: 20, marginRight: 20, marginTop: 10 }}>
+                    <TextInput styles={styles.textInput} placeholder="Address" underlineColorAndroid='#d5d5d5' onChangeText={(address) => this.setState({ address: address, addresserror: '' })} />
+                    <Text style={{ color: 'red' }}>{this.state.addresserror}</Text>
 
                   </View>
                   <View style={{ marginLeft: 20, marginRight: 20, marginTop: 10 }}>
@@ -450,7 +465,7 @@ class RegisterContinue extends Component {
                   </View>
 
                   <View style={{ marginLeft: 20, marginRight: 20, marginTop: 10 }}>
-                    <TextInput styles={styles.textInput}  placeholder="Please enter valid GST number. E.g. 22AAAAA00001Z5" underlineColorAndroid='#d5d5d5' onChangeText={(gstin)=>{this.handleMore(gstin)}} maxLength={15} />
+                    <TextInput styles={styles.textInput} placeholder="Please enter valid GST number. E.g. 22AAAAA00001Z5" underlineColorAndroid='#d5d5d5' onChangeText={gstin=>this.handleMore(gstin)} maxLength={15} autoCapitalize='characters'/>
                     <Text style={{ color: 'red' }}>{this.state.grtineeror}</Text>
                   </View>
                   {/* <View style={{ marginLeft: 20, marginRight: 20, marginTop: 10 }}>
@@ -458,7 +473,7 @@ class RegisterContinue extends Component {
                     <Text style={{ color: 'red' }}>{this.state.pannerror}</Text>
                   </View> */}
                   <View style={{ marginLeft: 20, marginRight: 20, marginTop: 10 }}>
-                    <TextInput styles={styles.textInput} autoCapitalize='characters' placeholder="Please enter valid PAN number. E.g. AAAAA9999A" underlineColorAndroid='#d5d5d5' onChangeText={(gstin)=>this.handleMore(gstin)} maxLength={10} />
+                    <TextInput styles={styles.textInput} autoCapitalize='characters' value={this.state.panData} placeholder="Please enter valid PAN number. E.g. AAAAA9999A" underlineColorAndroid='#d5d5d5' onChangeText={this.state.panData} maxLength={10} />
                     <Text style={{ color: 'red' }}>{this.state.pannerror}</Text>
                   </View>
 
@@ -468,22 +483,25 @@ class RegisterContinue extends Component {
                   </View>
 
                   <View style={{ marginLeft: 20, marginRight: 20, marginTop: 10 }}>
-                    <TextInput styles={styles.textInput} autoCapitalize='characters' placeholder="Please enter 12 digit aadhar number" underlineColorAndroid='#d5d5d5' onChangeText={(aadharData) => this.setState({ aadharData: aadharData, addresserror: '' })} keyboardType='numeric' maxLength={12} />
+                    <TextInput styles={styles.textInput} autoCapitalize='characters' placeholder="Please enter 12 digit aadhar number" underlineColorAndroid='#d5d5d5' onChangeText={(aadharData) => this.setState({ aadharData: aadharData, aadharerror: '' })} keyboardType='numeric' maxLength={12} />
                     <Text style={{ color: 'red' }}>{this.state.aadharerror}</Text>
                   </View>
+                
 
-                  <View style={{ alignItems: 'center' }}>
+                  <View style={{alignItems:'center',marginBottom:10,width:'100%'}} >
                     <TouchableOpacity style={styles.button} onPress={() => this.register()}>
                       <Text style={{ color: '#FFFFFF' }}>LOGIN</Text>
                     </TouchableOpacity>
                   </View>
-                  <View style={{ alignItems: 'center' }}>
+
+                  {/* <View style={{width:'100%',alignItems: 'center',justifyContent:'center',width:'100%' }}>
                     <Text style={{ color: '#blue' }}>OTP will be send to your mobile number</Text>
-                  </View>
+                  </View> */}
                 </View>
+
               ) : null}
-            </View>
-            <View>
+          </ScrollView>
+            <ScrollView>
               {this.state.transportervisible ? (
                 <View>
                   <Image source={require('../images/sanio_logo.png')} style={styles.logo} />
@@ -494,17 +512,22 @@ class RegisterContinue extends Component {
 
                   </View>
                   <View style={{ marginLeft: 20, marginRight: 20, marginTop: 10 }}>
+                    <TextInput styles={styles.textInput} placeholder="Address" underlineColorAndroid='#d5d5d5' onChangeText={(address) => this.setState({ address: address, addresserror: '' })} />
+                    <Text style={{ color: 'red' }}>{this.state.addresserror}</Text>
+
+                  </View>
+                  <View style={{ marginLeft: 20, marginRight: 20, marginTop: 10 }}>
                     <TextInput styles={styles.textInput} placeholder="Company Name" underlineColorAndroid='#d5d5d5' onChangeText={(name) => this.setState({ companyname: name, companyerror: '' })} />
                     <Text style={{ color: 'red' }}>{this.state.companyerror}</Text>
 
                   </View>
                   <View style={{ marginLeft: 20, marginRight: 20, marginTop: 10 }}>
-                    <TextInput styles={styles.textInput} placeholder="GSTIN" underlineColorAndroid='#d5d5d5' onChangeText={(name) => this.setState({ gstin: name, grtineeror: '' })} maxLength={15} />
+                    <TextInput styles={styles.textInput} placeholder="GSTIN" underlineColorAndroid='#d5d5d5' onChangeText={gstin=>this.handleMore(gstin)} maxLength={15} autoCapitalize='characters'/>
                     <Text style={{ color: 'red' }}>{this.state.grtineeror}</Text>
 
                   </View>
                   <View style={{ marginLeft: 20, marginRight: 20, marginTop: 10 }}>
-                    <TextInput styles={styles.textInput} placeholder="PAN NO." underlineColorAndroid='#d5d5d5' onChangeText={(name) => this.setState({ panData: name, pannerror: '' })} maxLength={10} />
+                    <TextInput styles={styles.textInput} placeholder="PAN NO." value={this.state.panData} underlineColorAndroid='#d5d5d5' onChangeText={(name) => this.setState({ panData: name, pannerror: '' })} maxLength={10} autoCapitalize='characters'/>
                     <Text style={{ color: 'red' }}>{this.state.pannerror}</Text>
 
                   </View>
@@ -514,8 +537,6 @@ class RegisterContinue extends Component {
                     <Text style={{ color: 'red' }}>{this.state.addresserror}</Text>
 
                   </View>
-
-
 
                   <View style={{ marginLeft: 20, marginRight: 20, marginTop: 10 }}>
                     <TextInput styles={styles.textInput} placeholder="Alternative Mobile" underlineColorAndroid='#d5d5d5' onChangeText={(name) => this.setState({ aleternativemobile: name, aleternativemobileerror: '' })} keyboardType='numeric' maxLength={10} />
@@ -528,23 +549,23 @@ class RegisterContinue extends Component {
 
                   </View>
 
-                  <View style={{ alignItems: 'center' ,bottom:5,position:"absolute"}}>
+                  <View style={{ alignItems: 'center' }}>
                     <TouchableOpacity style={styles.button} onPress={() => this.register()}>
                       <Text style={{ color: '#FFFFFF' }}>LOGIN</Text>
                     </TouchableOpacity>
                   </View>
-                  <View style={{ alignItems: 'center' }}>
+                  {/* <View style={{ alignItems: 'center',width:'100%'  }}>
                     <Text style={{ color: '#blue' }}>OTP will be send to your mobile number</Text>
-                  </View>
+                  </View> */}
                 </View>
               ) : null}
-            </View>
+            </ScrollView>
 
-          </View>
+         
 
 
         </View>
-      </ScrollView>
+   
     );
   }
 

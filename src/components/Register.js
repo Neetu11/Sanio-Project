@@ -5,10 +5,10 @@ import { Picker } from '@react-native-community/picker';
 import AnimatedEllipsis from 'react-native-animated-ellipsis';
 
 class Register extends Component {
-  // const [selectedValue, setSelectedValue] = useState("Select State");
 
   constructor() {
     super();
+    this.getstate=this.getstate.bind(this);
     this.state = {
       isLoading: false,
       namerror: '',
@@ -23,12 +23,115 @@ class Register extends Component {
       name: '',
       email: '',
       city: '',
-      state: '',
-      choosenIndex: 0
+      country: '',
+      countryid:'',
+      countrypicker:[],
+      statepicker:[],
+      citypicker:[],
+      choosenIndex: 0,
+      pickerSelected: '',
+      defaultSelected: '',
     }
   }
 
+  getcountry=()=>{
+    
+    fetch('https://capi.saniologistics.com/api/Common/GetAllCountry'
+    , {
+      method: 'GET',
+      headers: {
+       'Content-Type': 'application/json',
+     },
+      
+   })
+       .then((response) => response.json())
+       .then((responseJSON) => {
+         console.log(JSON.stringify(responseJSON))
+       // Alert.alert(JSON.stringify(responseJSON))
+           if (responseJSON.Message === "194 records found.") {
+               this.setState({isLoading:false,
+                countrypicker:responseJSON.Result});   
+
+          //    Alert.alert("status"+this.state.countrypicker)
+           } else {
+               this.setState({isLoading:false});
+              // Alert.alert("status"+responseJSON)
+           }
+       }).catch((error) => {
+           console.error(error);
+       });
+}
+   async getstate(value,position){
+  // Alert.alert(JSON.stringify(value))
+      await this.setState({
+      cityerror:'',
+      countryid:JSON.stringify(value),
+      country:JSON.stringify(this.state.countrypicker[position-1].Country_Name)
+    })
+    Alert.alert(this.state.country)
+   
+   // Alert.alert(this.state.pickerSelected)
+   
+    fetch('https://capi.saniologistics.com/api/Common/GetStateByCountry?countryId='+JSON.stringify(value), {
+      method: 'GET',
+
+   }).then((response) => response.json())
+       .then((responseJSON) => {
+         console.log(JSON.stringify(responseJSON))
+      // Alert.alert(JSON.stringify(responseJSON))
+           if (responseJSON.Message === "One or more records founds.") {
+               this.setState({isLoading:false,
+              statepicker:responseJSON.Result});   
+            //  Alert.alert("status"+this.state.statepicker)
+           } else {
+               this.setState({isLoading:false});
+              // Alert.alert("status"+responseJSON)
+           }
+       }).catch((error) => {
+
+
+           console.error(error);
+       });
+  }
+
+  async getcity(value,position)
+  {
+    await this.setState({
+      cityerror:'',
+      StateId:JSON.stringify(value),
+      statee:JSON.stringify(this.state.statepicker[position-1].State_Name)
+    })
+    //Alert.alert(this.state.statee)
+    fetch('https://capi.saniologistics.com/api/Common/GetCityByState?stateId='+value,
+       
+     {
+      method: 'GET',
+      headers: {
+       'Content-Type': 'application/json',
+     },
+    
+   })
+
+       .then((response) => response.json())
+       .then((responseJSON) => {
+         console.log(JSON.stringify(responseJSON))
+       // Alert.alert(JSON.stringify(responseJSON))
+           if (responseJSON.Message === "One or more records founds.") {
+               this.setState({isLoading:false,
+              citypicker:responseJSON.Result});   
+
+            //  Alert.alert("status"+this.state.statepicker)
+           } else {
+               this.setState({isLoading:false});
+              // Alert.alert("status"+responseJSON)
+           }
+       }).catch((error) => {
+           console.error(error);
+       });
+ 
+  }
   componentDidMount() {
+    this.getcountry()
     setTimeout(() => {
       this._retrieveData
       // AsyncStorage.getItem('mobile').then(value =>
@@ -68,7 +171,6 @@ class Register extends Component {
 
   formvalidation() {
    
-  
     if (this.state.name === "") {
       this.setState({ namerror: 'Field can\'t be empty!' })
     } 
@@ -92,7 +194,7 @@ class Register extends Component {
     }
        console.log("city"+this.state.city)
 
-      if(this.state.city.trim()!="" && this.state.statee.trim()!="" && this.state.usertype.trim()!="" && this.state.name.trim()!="" && this.state.email.trim()!="" &&!this.validateEmail(this.state.email)){
+      if(this.state.city.trim()!="" && this.state.statee.trim()!="" && this.state.usertype.trim()!="" && this.state.name.trim()!="" && this.state.email.trim()!="" &&this.validateEmail(this.state.email)){
     
         this.openProgressbar()
         AsyncStorage.setItem('mobile', this.state.mobile);
@@ -113,20 +215,18 @@ class Register extends Component {
         <View style={{ backgroundColor: 'white', height: '100%' }}>
         {this.state.isLoading?(
          <CustomProgressBar/>
-        // <ActivityIndicator size="small" color="#0000ff" />
           ):null}
+
           <Image source={require('../images/sanio_logo.png')} style={styles.logo} />
-          <Text style={{ fontSize: 30, marginLeft: 20, marginTop: 40, color: '#184272' }}>Sign up to continue</Text>
-          <View style={{ marginLeft: 20, marginRight: 20, marginTop: 40 }}>
+            <Text style={{ fontSize: 30, marginLeft: 20, marginTop: 40, color: '#184272' }}>Sign up to continue</Text>
+            <View style={{ marginLeft: 20, marginRight: 20, marginTop: 40 }}>
             <TextInput styles={styles.textInput} placeholder="Name" underlineColorAndroid='#d5d5d5' onChangeText={(name) => this.setState({ name: name,namerror: ''  })} />
             <Text style={{ color: 'red' }}>{this.state.namerror}</Text>
           </View>
 
-
           <View style={{ marginLeft: 20, marginRight: 20, marginTop: 10 }}>
             <TextInput styles={styles.textInput} placeholder="Email" underlineColorAndroid='#d5d5d5' onChangeText={(email) => this.setState({ email: email, emailerror: '' })}/>
             <Text style={{ color: 'red' }}>{this.state.emailerror}</Text>
-
           </View>
 
           <View style={{ width: '100%', marginLeft: 20, marginRight: 20, marginTop: 10 }}>
@@ -146,10 +246,12 @@ class Register extends Component {
           <View style={{ width: '100%', marginLeft: 20, marginRight: 20, marginTop: 10 }}>
             <View style={{ width: '90%', borderColor: '#d5d5d5', borderWidth: 1 }}>
               <Picker selectedValue={this.state.statee} onValueChange={(itemValue, itemPosition) =>
-                this.setState({ statee: itemValue, choosenIndex: itemPosition ,stateerror: '' })} style={{ height: 50, width: '100%' }}>
-                <Picker.Item label="Select state" value="Select state" />
+                this.setState({ statee: itemValue ,stateerror: '' })
+                } style={{ height: 50, width: '100%' }}>
+                <Picker.Item label="Select State" value="Select State" />
                 <Picker.Item label="Delhi" value="Delhi" />
                 <Picker.Item label="Uttar Pradesh" value="Uttar Pradesh" />
+               
               </Picker>
             </View>
             <Text style={{ color: 'red' }}>{this.state.stateerror}</Text>
@@ -157,15 +259,77 @@ class Register extends Component {
 
           <View style={{ width: '100%', marginLeft: 20, marginRight: 20, marginTop: 10 }}>
             <View style={{ width: '90%', borderColor: '#d5d5d5', borderWidth: 1 }}>
-                <Picker selectedValue={this.state.city} onValueChange={(itemValue, itemPosition) =>
-                this.setState({ city: itemValue, choosenIndex: itemPosition,cityerror: '' })} style={{ height: 50, width: '100%' }} >
+              <Picker selectedValue={this.state.city} onValueChange={(itemValue, itemPosition) =>
+                this.setState({ city: itemValue ,cityerror: '' })
+                } style={{ height: 50, width: '100%' }}>
                 <Picker.Item label="Select city" value="Select city" />
-                <Picker.Item label="Uttam nagar" value="Uttam nagar" />
-                <Picker.Item label="Rajori" value="Rajori" />
+                <Picker.Item label="Delhi" value="Delhi" />
+                <Picker.Item label="New Delhi" value="New Delhi" />
               </Picker>
             </View>
             <Text style={{ color: 'red' }}>{this.state.cityerror}</Text>
           </View>
+
+
+
+          {/* <View style={{ width: '100%', marginLeft: 20, marginRight: 20, marginTop: 10 }}>
+            <View style={{ width: '90%', borderColor: '#d5d5d5', borderWidth: 1 }}>
+                
+            <Picker selectedValue={this.state.country} onValueChange={(itemValue, itemPosition) =>this.getstate(itemValue,itemPosition)
+                } style={
+                  { height: 50, width: '100%' }} >
+               <Picker.Item label="Select country" value="" />
+
+              {this.state.countrypicker.map((item, key)=>(
+                
+                <Picker.Item label={item.Country_Name} value={item.CountryID} key={item.CountryID} />)
+                )}
+            </Picker>
+            </View>
+            <Text style={{ color: 'red' }}>{this.state.cityerror}</Text>
+          </View>
+          
+           <View style={{ width: '100%', marginLeft: 20, marginRight: 20, marginTop: 10 }}>
+            <View style={{ width: '90%', borderColor: '#d5d5d5', borderWidth: 1 }}>
+                <Picker selectedValue={this.state.statee} onValueChange={(itemValue, itemPosition) =>
+                 this.getcity(itemValue,itemPosition)} style={{ height: 50, width: '100%' }} >
+              <Picker.Item label="Select state" value="" />
+              { this.state.statepicker.map((item, key)=>(
+                <Picker.Item key={item.StateId} label={item.State_Name} value={item.StateId} key={key} />)
+                )}
+              </Picker>
+            </View>
+            <Text style={{ color: 'red' }}>{this.state.cityerror}</Text>
+          </View>
+
+          <View style={{ width: '100%', marginLeft: 20, marginRight: 20, marginTop: 10 }}>
+          <View style={{ width: '90%', borderColor: '#d5d5d5', borderWidth: 1 }}>
+          <Picker selectedValue={this.state.city} onValueChange={(itemValue, itemPosition) =>
+                 this.setState({city:itemValue})} style={{ height: 50, width: '100%' }} >
+                <Picker.Item label="Select city" value="" />
+
+              { this.state.citypicker.map((item, key)=>(
+                <Picker.Item key={item.CityId} label={item.City_Name} value={item.CityId} key={key} />)
+                )}
+              </Picker>
+            </View>
+            <Text style={{ color: 'red' }}>{this.state.usertypeerror}</Text>
+          </View> */}
+       
+
+          {/* <View style={{ width: '100%', marginLeft: 20, marginRight: 20, marginTop: 10 }}>
+            <View style={{ width: '90%', borderColor: '#d5d5d5', borderWidth: 1 }}>
+              <Picker selectedValue={this.state.usertype} onValueChange={(itemValue, itemPosition) =>
+                this.setState({ usertype: itemValue ,usertypeerror: '' })
+                } style={{ height: 50, width: '100%' }}>
+                <Picker.Item label="Select user type" value="Select user type" />
+                <Picker.Item label="Customer" value="Customer" />
+                <Picker.Item label="Truck Owner" value="Truck Owner" />
+                <Picker.Item label="Transporter" value="Transporter" />
+              </Picker>
+            </View>
+            <Text style={{ color: 'red' }}>{this.state.usertypeerror}</Text>
+          </View> */}
 
           <View style={{ alignItems: 'center' }}>
             <TouchableOpacity style={styles.button} onPress={() => this.formvalidation()}>

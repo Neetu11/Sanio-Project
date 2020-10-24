@@ -1,11 +1,32 @@
 import React, { Component } from 'react';
 import { AsyncStorage } from 'react-native';
-// import { RadioGroup } from 'react-native-radio-buttons-group';
-import { View, ImageBackground, Image, StyleSheet, StatusBar, Text, Alert, TouchableOpacity, Modal, ListView } from 'react-native';
+import { View, ImageBackground, Image, StyleSheet, StatusBar,BackAndroid, Alert,Dimensions , Text, TouchableOpacity, Modal, ListView } from 'react-native';
 import { FlatList, ScrollView, TextInput } from 'react-native-gesture-handler';
 import CardView from 'react-native-cardview';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import { NavigationContainer } from '@react-navigation/native';
+import { DrawerActions } from '@react-navigation/native';
+import { DrawerContent } from './Customdrawer';
 
-class DriverDashboard extends Component {
+const Drawer=createDrawerNavigator();
+
+const DriverDashboard=()=>{
+    return(
+        // <NavigationContainer>
+        <Drawer.Navigator drawerContent={props => <DrawerContent {...props} />}>
+                <Drawer.Screen name="Home" component={HomePage}></Drawer.Screen>
+        </Drawer.Navigator> 
+    //    </NavigationContainer>      
+       );
+}
+
+// handleBackButton=()=> {
+//     ToastAndroid.show('Back button is pressed', ToastAndroid.SHORT);
+//     return true;
+// }
+
+class HomePage  extends Component{
+
     constructor() {
         super();
         this.state = {
@@ -60,6 +81,7 @@ class DriverDashboard extends Component {
         }
         );
     }
+   
     FlatListItemSeparator = () => {
         return (<View style={{
             height: 1,
@@ -69,8 +91,9 @@ class DriverDashboard extends Component {
     }
     render() {
         return (
-            <View>
+            <View style={{flex:1}}>
                 <ImageBackground source={require('../images/dashboard_background.png')} style={styles.image}>
+                    <View style={{flex:0.2}}>
                     <StatusBar
                         backgroundColor="#184272"
                         barStyle="dark-content"
@@ -79,9 +102,11 @@ class DriverDashboard extends Component {
                     />
                     <View style={{ flexDirection: 'row' }}>
                         <View style={{ flexDirection: 'row', marginTop: 55, marginLeft: 40, width: '65%' }}>
-                            <View>
-                                <Image source={require('../images/sidemenu.png')} style={styles.sidemenu} />
-                            </View>
+                            <TouchableOpacity onPress={()=>this.props.navigation.dispatch(DrawerActions.openDrawer())}>
+                                
+                                <Image source={require('../images/sidemenu.png')} style={styles.sidemenu}
+                                />
+                            </TouchableOpacity>
                             <View style={{ marginLeft: 20, backgroundColor: 'white', width: 100, borderRadius: 14, height: 26, alignItems: 'center', justifyContent: 'center' }}>
                                 <Text style={{ color: '#184272', fontWeight: 'bold', fontSize: 16 }}>Details</Text>
                             </View>
@@ -98,9 +123,9 @@ class DriverDashboard extends Component {
                     <View>
                         <Text style={{ color: 'white', marginLeft: 44, fontSize: 29, marginTop: 5, fontWeight: 'bold' }}>Hello, {this.state.name}</Text>
                     </View>
-
+                    </View>
                     {this.state.customerdashboard ? (
-                        <View>
+                         <View style={{flex:0.8}}>
                             
                             <View style={{ justifyContent: 'center', alignContent: 'center', alignItems: 'center', marginTop: 40 }}>
                             
@@ -148,7 +173,7 @@ class DriverDashboard extends Component {
                                 <Text style={{ color: 'gray', fontWeight: 'bold', fontSize: 25, marginLeft: 5, alignSelf: 'flex-end' }}>Km</Text>
                             </View>
 
-                            <View style={{ width: '100%', borderRadius: 5, bottom: 0, position: 'absolute', alignItems: 'center' }}>
+                            <View style={{ width: '100%', borderRadius: 5, bottom: 15,position:'absolute',alignItems:'center'}}>
                                 <TouchableOpacity style={{ backgroundColor: '#184272', width: '90%', height: 50, borderRadius: 10 }}>
                                     <View style={{ flexDirection: 'row', width: '100%', height: '100%' }}>
                                         <View style={{ justifyContent: 'center', width: '80%', height: '100%' }}>
@@ -163,8 +188,9 @@ class DriverDashboard extends Component {
                             
                         </View>
                     ) : null}
+                 
                     {this.state.truckdashboard ? (
-                        <View>
+                       <View style={{flex:0.8}}>
                             <View style={{ flexDirection: 'column' }}>
                                 <View style={{ flexDirection: 'row', width: '100%', justifyContent: 'center', alignItems: 'center', alignContent: 'center', marginTop: 70 }}>
                                     <CardView cornerRadius={15} cardElevation={10} style={{ height: 190, width: 140, margin: 20, padding: 10 }}>
@@ -252,7 +278,7 @@ class DriverDashboard extends Component {
                         </View>
                     ) : null}
                     {this.state.transporterdashboard ? (
-                        <View>
+                        <View style={{flex:0.8}}>
                             <View style={{ justifyContent: 'center', alignContent: 'center', alignItems: 'center', marginTop: 40 }}>
                                 <CardView style={{ width: '80%', height: 180 }} cornerRadius={15} cardElevation={10}>
                                     <View style={{ padding: 15 }}>
@@ -357,7 +383,7 @@ class DriverDashboard extends Component {
 }
 const styles = StyleSheet.create({
     image: {
-        height: '100%',
+        flex: 1
 
     },
     sidemenu: {
